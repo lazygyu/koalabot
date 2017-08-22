@@ -1,7 +1,10 @@
 var request = require('request');
 
 const search = (query, cb)=>{
-    const url = "http://www.google.com/search?q=" + encodeURIComponent(query) + "&tbm=isch&source=lnt&tbs=itp:animated&sa=X&safe=active";
+    const bannedSite = ['-site:ilbe.com', '-site:instiz.net'];
+    const url = "http://www.google.com/search?q="
+        + encodeURIComponent(query + ' ' + bannedSite.join(' ')) 
+        + "&tbm=isch&source=lnt&tbs=itp:animated&sa=X&safe=active";
     request.get({
         url:url,
         headers:{
@@ -10,8 +13,8 @@ const search = (query, cb)=>{
     }, (err,resp,res)=>{
         if (err) return cb(err, null);
 
-        const reg = /(http[^"]+\.gif)/gi;
-        const resultSet = res.match(reg);
+        const reg = /"(http[^"]+\.gif[^"]+)"/gi;
+        const resultSet = res.match(reg).map( t => t.replace(/"/g, ''));
         
         if( !resultSet || resultSet.length === 0 ){
             return cb('결과를 못찾겠네여...', null);
